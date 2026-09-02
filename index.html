@@ -166,7 +166,28 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:
   </div>
 <div class="panel" style="margin-top:18px">
   <h2>Historial de mantenimientos</h2>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;margin:12px 0 18px">
+  <div>
+    <label>Sucursal</label>
+    <select id="historyBranch">
+      <option value="">Todas las sucursales</option>
+    </select>
+  </div>
 
+  <div>
+    <label>Desde</label>
+    <input type="date" id="historyFrom">
+  </div>
+
+  <div>
+    <label>Hasta</label>
+    <input type="date" id="historyTo">
+  </div>
+
+  <div style="align-self:end">
+    <button type="button" class="btn" id="historyFilterBtn">Filtrar</button>
+  </div>
+</div>
   <div style="overflow:auto">
     <table class="table">
       <thead>
@@ -304,8 +325,26 @@ async function loadMaintenanceHistory(){
 
   const tbody = document.getElementById('maintenanceHistoryRows');
   if(!tbody) return;
+  const branchSelect=document.getElementById('historyBranch');
 
-  tbody.innerHTML = historial.map(h => {
+if(branchSelect && branchSelect.options.length===1){
+  branchSelect.innerHTML=
+    '<option value="">Todas las sucursales</option>'+
+    branches.map(b=>`<option value="${b.id}">${b.nombre}</option>`).join('');
+}
+
+const filterBtn=document.getElementById('historyFilterBtn');
+if(filterBtn) filterBtn.onclick=loadMaintenanceHistory;
+  const branchFilter=document.getElementById('historyBranch')?.value || '';
+const fromFilter=document.getElementById('historyFrom')?.value || '';
+const toFilter=document.getElementById('historyTo')?.value || '';
+
+const filtrado=historial.filter(h=>{
+  if(branchFilter && String(h.sucursal_id)!==String(branchFilter)) return false;
+  if(fromFilter && h.fecha_realizado<fromFilter) return false;
+  if(toFilter && h.fecha_realizado>toFilter) return false;
+  return true;
+});tbody.innerHTML = filtrado.map(h => {
     const sucursal = branches.find(x => Number(x.id) === Number(h.sucursal_id));
     const area = areasList.find(x => Number(x.id) === Number(h.area_id));
     const equipo = equipment.find(x => Number(x.id) === Number(h.equipo_id));
