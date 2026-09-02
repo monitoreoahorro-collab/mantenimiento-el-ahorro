@@ -165,6 +165,25 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:
 </div>
   </div>
 <div class="panel" style="margin-top:18px">
+  <h2>Mantenimientos inactivos</h2>
+  <div style="overflow:auto">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Sucursal</th>
+          <th>Área</th>
+          <th>Equipo</th>
+          <th>Frecuencia</th>
+          <th>Última fecha</th>
+          <th>Próxima fecha</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody id="inactiveMaintenanceRows"></tbody>
+    </table>
+  </div>
+</div>
+<div class="panel" style="margin-top:18px">
   <h2>Historial de mantenimientos</h2>
   <div style="display:flex;gap:12px;flex-wrap:wrap;margin:12px 0 18px">
   <div>
@@ -314,7 +333,11 @@ async function loadMaintenance(){
   mantenimientos=await db(
     'mantenimiento_programado?select=id,sucursal_id,area_id,equipo_id,frecuencia_dias,ultima_fecha,proxima_fecha,notas,activo&activo=eq.true&order=proxima_fecha.asc'
   )||[];
+const mantenimientosInactivos=await db(
+  'mantenimiento_programado?select=id,sucursal_id,area_id,equipo_id,frecuencia_dias,ultima_fecha,proxima_fecha,notas,activo&activo=eq.false&order=proxima_fecha.asc'
+)||[];
 
+renderInactiveMaintenanceTable(mantenimientosInactivos);
   renderMaintenanceTable();
   await loadMaintenanceHistory();
   }
@@ -438,6 +461,25 @@ if(!m){
       headers:{'Prefer':'return=minimal'},
       body:JSON.stringify({
         activo:false,
+        updated_at:new Date().toISOString()
+      })
+    }
+  );
+
+  await loadMaintenance();
+  render();
+}
+async function reactivarMantenimiento(id){
+  const confirmar=confirm('¿Seguro que deseas reactivar este mantenimiento?');
+  if(!confirmar) return;
+
+  await db(
+    `mantenimiento_programado?id=eq.${id}`,
+    {
+      method:'PATCH',
+      headers:{'Prefer':'return=minimal'},
+      body:JSON.stringify({
+        activo:true,
         updated_at:new Date().toISOString()
       })
     }
@@ -573,7 +615,32 @@ function fillMaintenanceAreas(){
     </tr>
   `).join('');
 }
+function renderInactiveMaintenanceTable(lista){
+  const rows=document.getElementById('inactiveMaintenanceRows');
+  if(!rows) return;
 
+  if(!lista || !lista.length){
+    rows.innerHTML=`
+      <tr>
+        <td colspan="7" class="muted">No hay mantenimientos inactivos.</td>
+      </tr>`;
+    return;
+  }
+
+  rows.innerHTML=lista.map(m=>`
+    <tr>
+      <td>${branchName(m.sucursal_id)}</td>
+      <td>${areaName(m.area_id)}</td>
+      <td>${equipName(m.equipo_id)}</td>
+      <td>${m.frecuencia_dias} días</td>
+      <td>${m.ultima_fecha || '-'}</td>
+      <td>${m.proxima_fecha || '-'}</td>
+      <td>
+        <button type="button" class="btn" onclick="reactivarMantenimiento(${m.id})">Reactivar</button>
+      </td>
+    </tr>
+  `).join('');
+}
 function fillMaintenanceEquipment(){
   const areaId=+mArea.value;
   const list=equipment.filter(e=>e.area_id===areaId);
