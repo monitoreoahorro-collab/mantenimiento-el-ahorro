@@ -427,7 +427,25 @@ if(!m){
   await loadMaintenance();
   render();
 }
+ async function desactivarMantenimiento(id){
+  const confirmar=confirm('¿Seguro que deseas desactivar este mantenimiento?');
+  if(!confirmar) return;
 
+  await db(
+    `mantenimiento_programado?id=eq.${id}`,
+    {
+      method:'PATCH',
+      headers:{'Prefer':'return=minimal'},
+      body:JSON.stringify({
+        activo:false,
+        updated_at:new Date().toISOString()
+      })
+    }
+  );
+
+  await loadMaintenance();
+  render();
+}
 function page(id){
   document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
@@ -550,6 +568,7 @@ function fillMaintenanceAreas(){
         <button type="button" class="btn" onclick="marcarMantenimientoRealizado(${m.id})">
     Marcar realizado
   </button>
+  <button type="button" class="btn" onclick="desactivarMantenimiento(${m.id})">Desactivar</button>
 </td>
     </tr>
   `).join('');
