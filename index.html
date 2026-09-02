@@ -394,43 +394,37 @@ function render(){
   cProcess.textContent=reports.filter(r=>['En proceso','Esperando material','Resuelto'].includes(r.estatus)).length;
   cDone.textContent=reports.filter(r=>r.estatus==='Finalizado').length;
   recent.innerHTML=reports.slice(0,5).map(r=>`<div class="row"><div><b>${r.folio} · ${equipName(r.equipo_id)}</b><div class="muted">${branchName(r.sucursal_id)} · ${areaName(r.area_id)}</div></div><span class="badge ${r.prioridad==='Urgente'?'urgent':r.prioridad==='Alta'?'high':r.estatus==='En proceso'?'process':r.estatus==='Finalizado'?'done':''}">${r.estatus}</span></div>`).join('')||'<div class="muted">Sin reportes todavía.</div>';
-  alerts.innerHTML=profile.rol==='admin'
-  ?(mantenimientos.filter(m=>{
+if(profile.rol==='admin'){
   const hoy=new Date();
   hoy.setHours(0,0,0,0);
 
-  const fecha=new Date(m.proxima_fecha+'T00:00:00');
-  const aviso=new Date(fecha);
-  aviso.setDate(aviso.getDate()-7);
+  const limite=new Date(hoy);
+  limite.setDate(limite.getDate()+7);
 
-  return hoy>=aviso;
-}).length
-  ?mantenimientos.filter(m=>{
-      const hoy=new Date();
-      hoy.setHours(0,0,0,0);
+  const proximos=mantenimientos.filter(m=>{
+    const fecha=new Date(m.proxima_fecha+'T00:00:00');
+    return fecha<=limite;
+  });
 
-      const fecha=new Date(m.proxima_fecha+'T00:00:00');
-      const aviso=new Date(fecha);
-      aviso.setDate(aviso.getDate()-7);
+  alerts.innerHTML=proximos.length
+    ? proximos.map(m=>{
+        const fecha=new Date(m.proxima_fecha+'T00:00:00');
 
-      return hoy>=aviso;
-    }).map(m=>{
-      const hoy=new Date();
-      hoy.setHours(0,0,0,0);
+        let estado='PRÓXIMO';
+        if(fecha<hoy) estado='VENCIDO';
+        else if(fecha.getTime()===hoy.getTime()) estado='VENCE HOY';
 
-      const fecha=new Date(m.proxima_fecha+'T00:00:00');
-      const vencido=hoy>fecha;
-
-     return `<div class="alert">
-<b>${vencido?'Mantenimiento vencido':'Mantenimiento programado'}</b><br>
-${equipName(m.equipo_id)} · ${branchName(m.sucursal_id)}<br>
-<span class="muted">Próxima fecha: ${m.proxima_fecha}${vencido?' · VENCIDO':''}</span><br>
-<button type="button" onclick="marcarMantenimientoRealizado(${m.id})">✓ Marcar realizado</button>
-</div>`;
-    }).join('')
-
-    :'<div class="muted">Sin mantenimientos programados.</div>')
-  :'<div class="muted">Tus reportes se muestran arriba.</div>';
+        return `<div class="alert">
+          <b>${estado} · Mantenimiento programado</b><br>
+          ${equipName(m.equipo_id)} · ${branchName(m.sucursal_id)}<br>
+          <span class="muted">Próxima fecha: ${m.proxima_fecha}</span><br>
+          <button type="button" onclick="marcarMantenimientoRealizado(${m.id})">✓ Marcar realizado</button>
+        </div>`;
+      }).join('')
+    : '<div class="muted">Sin mantenimientos próximos en los siguientes 7 días.</div>';
+}else{
+  alerts.innerHTML='<div class="muted">Tus reportes se muestran arriba.</div>';
+}
   reportRows.innerHTML=reports.map(r=>`<tr><td><button data-open="${r.id}" style="border:0;background:none;color:#b95700;font-weight:900">${r.folio}</button></td><td>${branchName(r.sucursal_id)}</td><td>${areaName(r.area_id)}</td><td>${equipName(r.equipo_id)}</td><td><span class="badge ${r.prioridad==='Urgente'?'urgent':r.prioridad==='Alta'?'high':''}">${r.prioridad}</span></td><td>${r.estatus}</td><td>${money((+r.mano_obra||0)+(+r.materiales||0)+(+r.otros||0))}</td></tr>`).join('');
   laborTotal.textContent=money(reports.reduce((a,r)=>a+(+r.mano_obra||0),0));
   materialsTotal.textContent=money(reports.reduce((a,r)=>a+(+r.materiales||0),0));
