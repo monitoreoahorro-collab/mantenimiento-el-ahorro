@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mantenimiento El Ahorro</title>
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--ink:#17212b;--muted:#74828d;--line:#e4e9ed;--brand:#e87516;--nav:#14212a;--ok:#1f8a55;--red:#c83a32;--blue:#2867a6}
+*{box-sizing:border-box}body{margin:0;font:15px system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink)}
+button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+.center{min-height:100vh;display:grid;place-items:center;padding:24px;background:linear-gradient(135deg,#111d26,#20313c)}
+.login{width:min(430px,100%);background:#fff;border-radius:20px;padding:28px;box-shadow:0 20px 60px #0004}
+.brand{font-size:24px;font-weight:900}.brand small{display:block;font-size:12px;color:var(--muted);margin-top:4px}
+.field{margin-top:14px}.field label{display:block;font-size:12px;font-weight:800;margin-bottom:6px}
+.field input,.field select,.field textarea{width:100%;padding:12px;border:1px solid #d8e0e5;border-radius:10px;background:#fff}
+.field textarea{min-height:100px;resize:vertical}.btn{border:0;border-radius:10px;padding:11px 16px;background:var(--brand);color:#fff;font-weight:800}
+.btn.secondary{background:#e9eef2;color:#26343d}.btn.full{width:100%;margin-top:16px}
+.msg{margin-top:12px;font-size:13px}.err{color:#a9251d}.ok{color:#176d3e}
+.shell{display:flex;min-height:100vh}.side{width:240px;background:var(--nav);color:#fff;padding:22px 14px;position:fixed;inset:0 auto 0 0}
+.logo{font-size:20px;font-weight:900;padding:8px 10px 24px}.logo small{display:block;font-size:11px;opacity:.6;margin-top:3px}
+.nav button{width:100%;border:0;background:transparent;color:#dce4e8;text-align:left;padding:12px;border-radius:10px;margin:3px 0}
+.nav button.active,.nav button:hover{background:#273743;color:#fff}.main{margin-left:240px;flex:1;padding:28px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:22px}.eyebrow{color:var(--brand);font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+.top h1{margin:3px 0;font-size:28px}.muted{color:var(--muted);font-size:13px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}.card,.panel{background:#fff;border:1px solid var(--line);border-radius:15px;box-shadow:0 4px 15px #18232c0a}
+.card{padding:18px}.num{font-size:30px;font-weight:900;margin-top:6px}.panel{padding:19px;margin-top:18px}
+.grid{display:grid;grid-template-columns:1.4fr 1fr;gap:18px}.row{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}.badge{display:inline-block;padding:5px 9px;border-radius:99px;background:#edf1f4;font-size:11px;font-weight:800}
+.urgent{background:#ffe1de;color:#a5251d}.high{background:#fff0d5;color:#915600}.process{background:#e4effd;color:#245c91}.done{background:#ddf4e6;color:#176d3e}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:14px}.full{grid-column:1/-1}.choice{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.choice button{background:#fff;border:1px solid var(--line);border-radius:11px;padding:14px;text-align:left;font-weight:800}.choice button.sel{border-color:var(--brand);background:#fff7f0}
+.table{width:100%;border-collapse:collapse}.table th,.table td{padding:12px 8px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}.table th{font-size:11px;color:var(--muted);text-transform:uppercase}
+.alert{border:1px solid #efc6c0;background:#fff8f7;border-radius:11px;padding:13px;margin-bottom:9px}.total{font-size:24px;font-weight:900;text-align:right;margin-top:12px}
+@media(max-width:900px){.side{width:70px}.logo{font-size:0}.logo:before{content:"EA";font-size:20px}.logo small,.nav span{display:none}.main{margin-left:70px;padding:18px}.cards{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}}
+@media(max-width:600px){.form{grid-template-columns:1fr}.full{grid-column:auto}.choice{grid-template-columns:1fr}.top{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+
+<div id="loginView" class="center">
+  <div class="login">
+    <div class="brand">EL AHORRO<small>Sistema de mantenimiento</small></div>
+    <div class="field"><label>Correo</label><input id="email" type="email" placeholder="usuario@correo.com"></div>
+    <div class="field"><label>Contraseña</label><input id="password" type="password" placeholder="••••••••"></div>
+    <button id="loginBtn" class="btn full">Entrar</button>
+    <div id="loginMsg" class="msg"></div>
+  </div>
+</div>
+
+<div id="appView" class="shell hidden">
+  <aside class="side">
+    <div class="logo">EL AHORRO<small>Mantenimiento</small></div>
+    <div class="nav">
+      <button class="active" data-page="dashboard">▣ <span>Inicio</span></button>
+      <button data-page="reportes">🔧 <span>Reportes</span></button>
+      <button id="navNuevo" data-page="nuevo">＋ <span>Nuevo reporte</span></button>
+      <button id="navCostos" data-page="costos">💰 <span>Costos</span></button>
+      <button id="navProgramado" data-page="programado">🛠 <span>Programar mantenimiento</span></button>
+      <button id="logoutBtn">↪ <span>Salir</span></button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <section id="dashboard">
+      <div class="top"><div><div class="eyebrow" id="roleText"></div><h1 id="welcome">Mantenimiento</h1><div class="muted" id="whoText"></div></div><button id="quickNew" class="btn">+ Nuevo reporte</button></div>
+      <div class="cards">
+        <div class="card"><div class="muted">Nuevos</div><div class="num" id="cNew">0</div></div>
+        <div class="card"><div class="muted">Pendientes</div><div class="num" id="cPending">0</div></div>
+        <div class="card"><div class="muted">En proceso</div><div class="num" id="cProcess">0</div></div>
+        <div class="card"><div class="muted">Finalizados</div><div class="num" id="cDone">0</div></div>
+      </div>
+      <div class="grid">
+        <div class="panel"><h2>Últimos reportes</h2><div id="recent"></div></div>
+        <div class="panel" id="alertsPanel"><h2>Alertas recurrentes</h2><div id="alerts"></div></div>
+      </div>
+    </section>
+
+    <section id="reportes" class="hidden">
+      <div class="top"><div><div class="eyebrow">Bandeja</div><h1>Reportes</h1><div class="muted">Información sincronizada con Supabase.</div></div><button class="btn" data-page="nuevo">+ Reportar</button></div>
+      <div class="panel"><div style="overflow:auto"><table class="table"><thead><tr><th>Folio</th><th>Sucursal</th><th>Área</th><th>Equipo</th><th>Prioridad</th><th>Estatus</th><th>Total</th></tr></thead><tbody id="reportRows"></tbody></table></div></div>
+    </section>
+
+    <section id="nuevo" class="hidden"> 
+      <div class="top"><div><div class="eyebrow">Captura</div><h1>Nuevo reporte</h1><div class="muted">Registra el incidente en pocos pasos.</div></div></div>
+      <div class="panel"><form id="newForm" class="form">
+        <div class="field"><label>Sucursal</label><select id="fBranch"></select></div>
+        <div class="field"><label>Prioridad</label><select id="fPriority"><option>Normal</option><option>Media</option><option>Alta</option><option>Urgente</option></select></div>
+        <div class="field full"><label>Área</label><div class="choice" id="areas"></div></div>
+        <div class="field"><label>Equipo</label><select id="fEquipment"></select></div>
+        <div class="field"><label>Problema</label><input id="fProblem" required placeholder="Ej. No enfría"></div>
+        <div class="field full"><label>Descripción</label><textarea id="fDescription" required placeholder="Describe qué sucede."></textarea></div>
+        <div class="field"><label>Solicitante</label><input id="fRequester" placeholder="Nombre del gerente"></div>
+        <div class="full"><button class="btn">Enviar reporte</button></div>
+      </form><div id="newMsg" class="msg"></div></div>
+    </section>
+
+    <section id="programado" class="hidden">
+  <div class="top">
+    <div>
+      <div class="eyebrow">Administrador</div>
+      <h1>Programar mantenimiento</h1>
+      <div class="muted">Programa mantenimientos recurrentes por sucursal y equipo.</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <form id="maintenanceForm" class="form">
+
+      <div class="field">
+        <label>Sucursal</label>
+        <select id="mBranch" required></select>
+      </div>
+
+      <div class="field">
+        <label>Área</label>
+        <select id="mArea" required></select>
+      </div>
+
+      <div class="field">
+        <label>Equipo</label>
+        <select id="mEquipment" required></select>
+      </div>
+
+      <div class="field">
+        <label>Frecuencia (días)</label>
+        <input id="mFrequency" type="number" min="1" value="30" required>
+      </div>
+
+      <div class="field">
+        <label>Próxima fecha</label>
+        <input id="mNextDate" type="date" required>
+      </div>
+
+      <div class="field full">
+        <label>Notas</label>
+        <textarea id="mNotes" placeholder="Ej. Mantenimiento preventivo, limpieza, revisión general..."></textarea>
+      </div>
+
+      <div class="full">
+        <button class="btn" type="submit">Guardar mantenimiento</button>
+      </div>
+
+      <div id="maintenanceMsg" class="msg"></div>
+
+    </form>
+    <div class="panel" style="margin-top:18px">
+  <h2>Mantenimientos programados</h2>
+  <div style="overflow:auto">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Sucursal</th>
+          <th>Área</th>
+          <th>Equipo</th>
+          <th>Frecuencia</th>
+          <th>Última fecha</th>
+          <th>Próxima fecha</th>
+          <th>Estado</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody id="maintenanceRows"></tbody>
+    </table>
+  </div>
+</div>
+  </div>
+<div class="panel" style="margin-top:18px">
+  <h2>Historial de mantenimientos</h2>
+
+  <div style="overflow:auto">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Fecha realizada</th>
+          <th>Sucursal</th>
+          <th>Área</th>
+          <th>Equipo</th>
+          <th>Notas</th>
+        </tr>
+      </thead>
+
+      <tbody id="maintenanceHistoryRows"></tbody>
+    </table>
+  </div>
+</div>
+</section>
+
+    <section id="costos" class="hidden">
+      <div class="top"><div><div class="eyebrow">Administrador</div><h1>Costos</h1><div class="muted">Totales de mantenimiento.</div></div></div>
+      <div class="cards"><div class="card"><div class="muted">Mano de obra</div><div class="num" id="laborTotal">$0</div></div><div class="card"><div class="muted">Materiales</div><div class="num" id="materialsTotal">$0</div></div><div class="card"><div class="muted">Otros</div><div class="num" id="otherTotal">$0</div></div><div class="card"><div class="muted">Total</div><div class="num" id="grandTotal">$0</div></div></div>
+    
+    <div class="panel" style="margin-top:18px">
+  <h2>Detalle de costos</h2>
+  <div style="overflow:auto">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Sucursal</th>
+          <th>Folio</th>
+          <th>Área</th>
+          <th>Equipo</th>
+          <th>Estatus</th>
+          <th>Mano de obra</th>
+          <th>Materiales</th>
+          <th>Otros</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody id="costRows"></tbody>
+    </table>
+  </div>
+</div>
+
+</section>
+
+<section id="detalle" class="hidden">
+      <div class="top"><div><div class="eyebrow" id="dFolio"></div><h1 id="dTitle"></h1><div class="muted" id="dMeta"></div></div><button class="btn secondary" data-page="reportes">← Volver</button></div>
+      <div class="grid">
+        <div class="panel"><h2>Información</h2><div id="dInfo"></div><h2 style="margin-top:20px">Comentarios</h2><div id="comments"></div><div id="commentBox" class="row"><input id="comment" placeholder="Comentario del administrador..." style="flex:1;padding:10px;border:1px solid #d5dee3;border-radius:9px"><button class="btn" id="addComment">Agregar</button></div></div>
+        <div class="panel" id="adminEditor"><h2>Administración</h2>
+          <div class="field"><label>Estatus</label><select id="dStatus"><option>Nuevo</option><option>Pendiente</option><option>Asignado</option><option>En proceso</option><option>Esperando material</option><option>Resuelto</option><option>Finalizado</option></select></div>
+          <div class="field"><label>Mano de obra</label><input id="dLabor" type="number" min="0" step=".01"></div>
+          <div class="field"><label>Materiales</label><input id="dMaterials" type="number" min="0" step=".01"></div>
+          <div class="field"><label>Otros</label><input id="dOther" type="number" min="0" step=".01"></div>
+          <div class="total" id="dTotal">$0</div>
+          <button class="btn full" id="saveDetail">Guardar cambios</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+const SUPABASE_URL = "https://agorsyzfbbbzobliccjm.supabase.co";
+const SUPABASE_KEY = "sb_publishable_3Ajm82rDwi3tww74PdLEuw_6G-8YReb";
+let accessToken = localStorage.getItem('ea_access_token') || '';
+
+async function authLogin(email,password){
+  const r = await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{
+    method:'POST',
+    headers:{'apikey':SUPABASE_KEY,'Content-Type':'application/json'},
+    body:JSON.stringify({email,password})
+  });
+  const data = await r.json();
+  if(!r.ok) throw new Error(data.error_description || data.msg || data.message || 'No se pudo iniciar sesión');
+  accessToken=data.access_token;
+  localStorage.setItem('ea_access_token',accessToken);
+  return data.user;
+}
+async function authUser(){
+  if(!accessToken) return null;
+  const r=await fetch(SUPABASE_URL+'/auth/v1/user',{headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+accessToken}});
+  if(!r.ok){localStorage.removeItem('ea_access_token');accessToken='';return null}
+  return await r.json();
+}
+function logout(){localStorage.removeItem('ea_access_token');accessToken='';location.reload()}
+async function db(path,opts={}){
+  const headers={
+    'apikey':SUPABASE_KEY,
+    'Authorization':'Bearer '+accessToken,
+    'Content-Type':'application/json',
+    'Accept':'application/json',
+    ...(opts.headers||{})
+  };
+  const r=await fetch(SUPABASE_URL+'/rest/v1/'+path,{...opts,headers});
+  const text=await r.text();
+  let data=null; try{data=text?JSON.parse(text):null}catch{data=text}
+  if(!r.ok) throw new Error((data&&data.message)||text||('Error '+r.status));
+  return data;
+}
+let profile=null, branches=[], areasList=[], equipment=[], reports=[], current=null;
+const money=n=>new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'}).format(Number(n)||0);
+
+async function loadProfile(){
+  const user=await authUser();
+  if(!user) return null;
+  const rows=await db('perfiles?select=id,nombre,rol,sucursal_id,activo&id=eq.'+encodeURIComponent(user.id));
+  return rows?.[0]||null;
+}
+async function loadCatalogs(){
+  branches=await db('sucursales?select=id,nombre&order=id.asc')||[];
+  areasList=await db('areas?select=id,nombre&activa=eq.true&order=id.asc')||[];
+  equipment=await db('equipos?select=id,nombre,area_id&activo=eq.true&order=id.asc')||[];
+}
+async function loadReports(){
+  reports=await db('reportes?select=id,folio,sucursal_id,area_id,equipo_id,problema,descripcion,prioridad,estatus,solicitante,responsable,mano_obra,materiales,otros,fecha_reporte,fecha_finalizacion&order=fecha_reporte.desc')||[];
+  render();
+
+}let mantenimientos=[];
+
+async function loadMaintenance(){
+  mantenimientos=await db(
+    'mantenimiento_programado?select=id,sucursal_id,area_id,equipo_id,frecuencia_dias,ultima_fecha,proxima_fecha,notas,activo&activo=eq.true&order=proxima_fecha.asc'
+  )||[];
+
+  renderMaintenanceTable();
+  await loadMaintenanceHistory();
+  }
+
+async function loadMaintenanceHistory(){
+  const historial = await db(
+    'mantenimiento_historial?select=id,mantenimiento_id,sucursal_id,area_id,equipo_id,fecha_realizado,notas&order=fecha_realizado.desc'
+  ) || [];
+
+  const tbody = document.getElementById('maintenanceHistoryRows');
+  if(!tbody) return;
+
+  tbody.innerHTML = historial.map(h => {
+    const sucursal = branches.find(x => Number(x.id) === Number(h.sucursal_id));
+    const area = areasList.find(x => Number(x.id) === Number(h.area_id));
+    const equipo = equipment.find(x => Number(x.id) === Number(h.equipo_id));
+
+   return `
+  <tr>
+    <td>${h.fecha_realizado || ''}</td>
+    <td>${sucursal ? sucursal.nombre : ''}</td>
+    <td>${area ? area.nombre : ''}</td>
+    <td>${equipo ? equipo.nombre : ''}</td>
+    <td>${h.notas || ''}</td>
+  </tr>
+`;
+}).join('');
+}
+
+async function marcarMantenimientoRealizado(id){
+  const m=mantenimientos.find(x=>Number(x.id)===Number(id));
+
+if(!m){
+  throw new Error('No se encontró el mantenimiento con ID: '+id);
+}
+
+  const hoy=new Date();
+  hoy.setHours(0,0,0,0);
+
+  const proxima=new Date(hoy);
+  proxima.setDate(proxima.getDate()+(Number(m.frecuencia_dias)||0));
+
+  const fechaHoy=hoy.toISOString().slice(0,10);
+  const fechaProxima=proxima.toISOString().slice(0,10);
+ try{
+  await db(
+    `mantenimiento_historial`,
+    {
+      method:'POST',
+      headers:{'Prefer':'return=minimal'},
+      body:JSON.stringify({
+        mantenimiento_id:Number(m.id),
+        sucursal_id:Number(m.sucursal_id),
+        area_id:Number(m.area_id),
+        equipo_id:Number(m.equipo_id),
+        fecha_realizado:fechaHoy,
+        notas:m.notas || ''
+      })
+    }
+  );
+
+}catch(err){
+  alert('ERROR HISTORIAL: ' + err.message);
+  throw err;
+}
+
+  await db(
+    `mantenimiento_programado?id=eq.${id}`,
+    {
+      method:'PATCH',
+      headers:{'Prefer':'return=minimal'},
+      body:JSON.stringify({
+        ultima_fecha:fechaHoy,
+        proxima_fecha:fechaProxima,
+        updated_at:new Date().toISOString()
+      })
+    }
+  );
+
+  await loadMaintenance();
+  render();
+}
+
+function page(id){
+  document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  document.querySelectorAll('.nav [data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));
+}
+function branchName(id){return branches.find(x=>x.id===id)?.nombre||'—'}
+function areaName(id){return areasList.find(x=>x.id===id)?.nombre||'—'}
+function equipName(id){return equipment.find(x=>x.id===id)?.nombre||'—'}
+function recurring(){
+  const m={}; reports.forEach(r=>{const k=r.sucursal_id+'|'+r.equipo_id;(m[k]??=[]).push(r)});
+  return Object.entries(m).map(([k,rs])=>({branch:branchName(+k.split('|')[0]),equipment:equipName(+k.split('|')[1]),count:rs.length,cost:rs.reduce((a,r)=>a+(+r.mano_obra||0)+(+r.materiales||0)+(+r.otros||0),0)})).filter(x=>x.count>=3||x.cost>=5000);
+}
+function render(){
+  cNew.textContent=reports.filter(r=>r.estatus==='Nuevo').length;
+  cPending.textContent=reports.filter(r=>['Pendiente','Asignado'].includes(r.estatus)).length;
+  cProcess.textContent=reports.filter(r=>['En proceso','Esperando material','Resuelto'].includes(r.estatus)).length;
+  cDone.textContent=reports.filter(r=>r.estatus==='Finalizado').length;
+  recent.innerHTML=reports.slice(0,5).map(r=>`<div class="row"><div><b>${r.folio} · ${equipName(r.equipo_id)}</b><div class="muted">${branchName(r.sucursal_id)} · ${areaName(r.area_id)}</div></div><span class="badge ${r.prioridad==='Urgente'?'urgent':r.prioridad==='Alta'?'high':r.estatus==='En proceso'?'process':r.estatus==='Finalizado'?'done':''}">${r.estatus}</span></div>`).join('')||'<div class="muted">Sin reportes todavía.</div>';
+  alerts.innerHTML=profile.rol==='admin'
+  ?(mantenimientos.filter(m=>{
+  const hoy=new Date();
+  hoy.setHours(0,0,0,0);
+
+  const fecha=new Date(m.proxima_fecha+'T00:00:00');
+  const aviso=new Date(fecha);
+  aviso.setDate(aviso.getDate()-7);
+
+  return hoy>=aviso;
+}).length
+  ?mantenimientos.filter(m=>{
+      const hoy=new Date();
+      hoy.setHours(0,0,0,0);
+
+      const fecha=new Date(m.proxima_fecha+'T00:00:00');
+      const aviso=new Date(fecha);
+      aviso.setDate(aviso.getDate()-7);
+
+      return hoy>=aviso;
+    }).map(m=>{
+      const hoy=new Date();
+      hoy.setHours(0,0,0,0);
+
+      const fecha=new Date(m.proxima_fecha+'T00:00:00');
+      const vencido=hoy>fecha;
+
+     return `<div class="alert">
+<b>${vencido?'Mantenimiento vencido':'Mantenimiento programado'}</b><br>
+${equipName(m.equipo_id)} · ${branchName(m.sucursal_id)}<br>
+<span class="muted">Próxima fecha: ${m.proxima_fecha}${vencido?' · VENCIDO':''}</span><br>
+<button type="button" onclick="marcarMantenimientoRealizado(${m.id})">✓ Marcar realizado</button>
+</div>`;
+    }).join('')
+
+    :'<div class="muted">Sin mantenimientos programados.</div>')
+  :'<div class="muted">Tus reportes se muestran arriba.</div>';
+  reportRows.innerHTML=reports.map(r=>`<tr><td><button data-open="${r.id}" style="border:0;background:none;color:#b95700;font-weight:900">${r.folio}</button></td><td>${branchName(r.sucursal_id)}</td><td>${areaName(r.area_id)}</td><td>${equipName(r.equipo_id)}</td><td><span class="badge ${r.prioridad==='Urgente'?'urgent':r.prioridad==='Alta'?'high':''}">${r.prioridad}</span></td><td>${r.estatus}</td><td>${money((+r.mano_obra||0)+(+r.materiales||0)+(+r.otros||0))}</td></tr>`).join('');
+  laborTotal.textContent=money(reports.reduce((a,r)=>a+(+r.mano_obra||0),0));
+  materialsTotal.textContent=money(reports.reduce((a,r)=>a+(+r.materiales||0),0));
+  otherTotal.textContent=money(reports.reduce((a,r)=>a+(+r.otros||0),0));
+  grandTotal.textContent=money(reports.reduce((a,r)=>a+(+r.mano_obra||0)+(+r.materiales||0)+(+r.otros||0),0));
+
+document.getElementById('costRows').innerHTML=reports.map(r=>{
+  const b=branches.find(x=>+x.id===+r.sucursal_id)?.nombre||'—';
+  const a=areasList.find(x=>+x.id===+r.area_id)?.nombre||'—';
+  const e=equipment.find(x=>+x.id===+r.equipo_id)?.nombre||'—';
+  const t=(+r.mano_obra||0)+(+r.materiales||0)+(+r.otros||0);
+
+  return `<tr>
+    <td>${b}</td>
+    <td>${r.folio||'—'}</td>
+    <td>${a}</td>
+    <td>${e}</td>
+    <td>${r.estatus||'—'}</td>
+    <td>${money(+r.mano_obra||0)}</td>
+    <td>${money(+r.materiales||0)}</td>
+    <td>${money(+r.otros||0)}</td>
+    <td><b>${money(t)}</b></td>
+  </tr>`;
+}).join('');
+
+}
+function setupForm(){
+  fBranch.innerHTML=branches.map(b=>`<option value="${b.id}">${b.nombre}</option>`).join('');
+  if(profile.rol==='sucursal'){fBranch.value=profile.sucursal_id;fBranch.disabled=true}else fBranch.disabled=false;
+  document.getElementById('areas').innerHTML=areasList.map((a,i)=>`<button type="button" data-area="${a.id}" class="${i===0?'sel':''}">${a.nombre}</button>`).join('');
+  selectArea(areasList[0]?.id);
+
+} function setupMaintenanceForm(){
+  mBranch.innerHTML=branches.map(b=>`<option value="${b.id}">${b.nombre}</option>`).join('');
+
+  if(profile.rol==='sucursal'){
+    mBranch.value=profile.sucursal_id;
+    mBranch.disabled=true;
+  }else{
+    mBranch.disabled=false;
+  }
+
+  fillMaintenanceAreas();
+}
+
+function fillMaintenanceAreas(){
+  mArea.innerHTML=areasList.map(a=>`<option value="${a.id}">${a.nombre}</option>`).join('');
+  fillMaintenanceEquipment();
+} function renderMaintenanceTable(){
+  const rows = document.getElementById('maintenanceRows');
+  if(!rows) return;
+
+  if(!mantenimientos.length){
+    rows.innerHTML = `
+      <tr>
+        <td colspan="8" class="muted">No hay mantenimientos programados.</td>
+      </tr>`;
+    return;
+  }
+
+  rows.innerHTML = mantenimientos.map(m => `
+    <tr>
+      <td>${branchName(m.sucursal_id)}</td>
+      <td>${areaName(m.area_id)}</td>
+      <td>${equipName(m.equipo_id)}</td>
+      <td>${m.frecuencia_dias} días</td>
+      <td>${m.ultima_fecha || '-'}</td>
+      <td>${m.proxima_fecha || '-'}</td>
+      <td>${m.activo ? 'Activo' : 'Inactivo'}</td>
+      <td>
+        <button type="button" class="btn" onclick="marcarMantenimientoRealizado(${m.id})">
+    Marcar realizado
+  </button>
+</td>
+    </tr>
+  `).join('');
+}
+
+function fillMaintenanceEquipment(){
+  const areaId=+mArea.value;
+  const list=equipment.filter(e=>e.area_id===areaId);
+
+  mEquipment.innerHTML=list.map(e=>`<option value="${e.id}">${e.nombre}</option>`).join('');
+}
+
+mArea.onchange=fillMaintenanceEquipment;
+
+maintenanceForm.onsubmit=async(e)=>{
+  e.preventDefault();
+
+  try{
+    const payload={
+      sucursal_id:+mBranch.value,
+      area_id:+mArea.value,
+      equipo_id:+mEquipment.value,
+      frecuencia_dias:+mFrequency.value,
+      ultima_fecha:null,
+      proxima_fecha:mNextDate.value,
+      notas:mNotes.value.trim(),
+      activo:true
+    };
+
+    await db(
+      'mantenimiento_programado',
+      {
+        method:'POST',
+        headers:{'Prefer':'return=minimal'},
+        body:JSON.stringify(payload)
+      }
+    );
+
+    maintenanceMsg.textContent='Mantenimiento programado correctamente.';
+    maintenanceMsg.className='msg ok';
+
+    maintenanceForm.reset();
+    mFrequency.value=30;
+
+    setupMaintenanceForm();
+    await loadMaintenance();
+    render();
+
+  }catch(err){
+    maintenanceMsg.textContent=err.message;
+    maintenanceMsg.className='msg err';
+  }
+};
+function selectArea(id){
+  document.querySelectorAll('[data-area]').forEach(b=>b.classList.toggle('sel',+b.dataset.area===+id));
+  const list=equipment.filter(e=>e.area_id===+id);
+  fEquipment.innerHTML=list.map(e=>`<option value="${e.id}">${e.nombre}</option>`).join('');
+  fEquipment.dataset.area=id||'';
+}
+async function openDetail(id){
+  current=reports.find(r=>r.id===id); if(!current)return;
+  dFolio.textContent=current.folio; dTitle.textContent=equipName(current.equipo_id);
+  dMeta.textContent=`${branchName(current.sucursal_id)} · ${areaName(current.area_id)} · ${current.prioridad}`;
+  dInfo.innerHTML=`<div class="row"><span>Problema</span><b>${current.problema}</b></div><div class="row"><span>Descripción</span><b>${current.descripcion||'—'}</b></div><div class="row"><span>Solicitante</span><b>${current.solicitante||'—'}</b></div>`;
+  dStatus.value=current.estatus; dLabor.value=current.mano_obra||0; dMaterials.value=current.materiales||0; dOther.value=current.otros||0;
+  dTotal.textContent=money((+current.mano_obra||0)+(+current.materiales||0)+(+current.otros||0));
+  adminEditor.classList.toggle('hidden',profile.rol!=='admin'); commentBox.classList.toggle('hidden',profile.rol!=='admin');
+  try{
+    const data=await db('comentarios?select=id,autor_nombre,comentario,created_at&reporte_id=eq.'+id+'&order=created_at.asc');
+    comments.innerHTML=(data||[]).map(c=>`<div class="row"><div><b>${c.autor_nombre||'Administrador'}</b><div class="muted">${c.comentario}</div></div></div>`).join('')||'<div class="muted">Sin comentarios.</div>';
+  }catch{comments.innerHTML='<div class="muted">Comentarios solo para administradores.</div>'}
+  page('detalle');
+}
+loginBtn.onclick=async()=>{
+  loginMsg.textContent='Entrando...';loginMsg.className='msg';
+  try{await authLogin(email.value.trim(),password.value);await start()}
+  catch(err){loginMsg.textContent=err.message;loginMsg.className='msg err'}
+};
+logoutBtn.onclick=logout;
+newForm.onsubmit=async e=>{
+  e.preventDefault();newMsg.textContent='Enviando...';newMsg.className='msg';
+  try{
+    const branchId=profile.rol==='sucursal'?profile.sucursal_id:+fBranch.value;
+    const areaId=+fEquipment.dataset.area, eqId=+fEquipment.value;
+    const folio='MT-'+Date.now().toString().slice(-8);
+    await db('reportes',{method:'POST',headers:{'Prefer':'return=minimal'},body:JSON.stringify({folio,sucursal_id:branchId,area_id:areaId,equipo_id:eqId,problema:fProblem.value.trim(),descripcion:fDescription.value.trim(),prioridad:fPriority.value,estatus:'Nuevo',solicitante:fRequester.value.trim()||profile.nombre})});
+    newMsg.textContent='Reporte enviado correctamente.';newMsg.className='msg ok';
+    newForm.reset();setupForm();await loadReports();page('reportes');
+  }catch(err){newMsg.textContent=err.message;newMsg.className='msg err'}
+};
+saveDetail.onclick=async()=>{
+  try{
+    const status=dStatus.value;
+    const payload={estatus:status,mano_obra:+dLabor.value||0,materiales:+dMaterials.value||0,otros:+dOther.value||0,updated_at:new Date().toISOString()};
+    if(status==='Finalizado')payload.fecha_finalizacion=new Date().toISOString();
+    await db('reportes?id=eq.'+current.id,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify(payload)});
+    await loadReports();await openDetail(current.id);
+  }catch(err){alert(err.message)}
+};
+addComment.onclick=async()=>{
+  const t=comment.value.trim();if(!t)return;
+  try{
+    const user=await authUser();
+    await db('comentarios',{method:'POST',headers:{'Prefer':'return=minimal'},body:JSON.stringify({reporte_id:current.id,autor_id:user.id,autor_nombre:profile.nombre,comentario:t})});
+    comment.value='';await openDetail(current.id);
+  }catch(err){alert(err.message)}
+};
+document.addEventListener('click',e=>{
+  const pg=e.target.closest('[data-page]');if(pg)page(pg.dataset.page);
+  const op=e.target.closest('[data-open]');if(op)openDetail(+op.dataset.open);
+  const ar=e.target.closest('[data-area]');if(ar)selectArea(+ar.dataset.area);
+});
+quickNew.onclick=()=>page('nuevo');
+async function start(){
+  try{
+    profile=await loadProfile();if(!profile)throw new Error('No existe un perfil asociado a este usuario.');
+   await loadCatalogs();await loadMaintenance();await loadReports();
+    roleText.textContent=profile.rol==='admin'?'Administrador':'Sucursal';
+    welcome.textContent=profile.rol==='admin'?'Centro de mantenimiento':profile.nombre;
+    whoText.textContent=profile.rol==='admin'?'Control general de las sucursales':'Crea y consulta los reportes de tu sucursal.';
+    navCostos.classList.toggle('hidden',profile.rol!=='admin');alertsPanel.classList.toggle('hidden',profile.rol!=='admin');
+    navProgramado.classList.toggle('hidden',profile.rol!=='admin');
+    setupForm();
+setupMaintenanceForm();
+loginView.classList.add('hidden');
+appView.classList.remove('hidden');
+page('dashboard');
+  }catch(err){
+    loginMsg.textContent=err.message;loginMsg.className='msg err';localStorage.removeItem('ea_access_token');accessToken='';
+  }
+}
+if(accessToken) start();
+</script>
+</body>
+</html>
