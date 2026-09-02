@@ -186,6 +186,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:
 
   <div style="align-self:end">
     <button type="button" class="btn" id="historyFilterBtn">Filtrar</button>
+    <button type="button" class="btn" id="historyClearBtn">Limpiar filtros</button>
   </div>
 </div>
   <div style="overflow:auto">
@@ -335,6 +336,18 @@ if(branchSelect && branchSelect.options.length===1){
 
 const filterBtn=document.getElementById('historyFilterBtn');
 if(filterBtn) filterBtn.onclick=loadMaintenanceHistory;
+const clearBtn=document.getElementById('historyClearBtn');
+if(clearBtn) clearBtn.onclick=()=>{
+  const branch=document.getElementById('historyBranch');
+  const from=document.getElementById('historyFrom');
+  const to=document.getElementById('historyTo');
+
+  if(branch) branch.value='';
+  if(from) from.value='';
+  if(to) to.value='';
+
+  loadMaintenanceHistory();
+};
   const branchFilter=document.getElementById('historyBranch')?.value || '';
 const fromFilter=document.getElementById('historyFrom')?.value || '';
 const toFilter=document.getElementById('historyTo')?.value || '';
