@@ -624,6 +624,7 @@ document.getElementById('costRows').innerHTML=reports.map(r=>{
     <td><b>${money(t)}</b></td>
   </tr>`;
 }).join('');
+}
 function filtrarCostos(){
   const sucursal=document.getElementById('costBranch')?.value || '';
   const desde=document.getElementById('costFrom')?.value || '';
@@ -663,7 +664,7 @@ function filtrarCostos(){
       <td><b>${money(t)}</b></td>
     </tr>`;
   }).join('');
-}
+  }
 
 document.getElementById('costFilterBtn').onclick=filtrarCostos;
 function setupForm(){
