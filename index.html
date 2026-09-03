@@ -233,7 +233,14 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:
     <div class="panel" style="margin-top:18px">
   <h2>Detalle de costos</h2>
   <div style="display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 16px 0;">
- 
+  <select id="costBranch">
+  <option value="">Todas las sucursales</option>
+</select>
+
+<input type="date" id="costFrom">
+<input type="date" id="costTo">
+
+<button type="button" class="btn" id="costFilterBtn">Filtrar</button>
 </div>
   <div style="overflow:auto">
     <table class="table">
