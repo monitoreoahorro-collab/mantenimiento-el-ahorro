@@ -241,6 +241,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:
 <input type="date" id="costTo">
 
 <button type="button" class="btn" id="costFilterBtn">Filtrar</button>
+<button type="button" class="btn secondary" id="costClearBtn">Limpiar filtros</button>
 </div>
   <div style="overflow:auto">
     <table class="table">
@@ -667,6 +668,12 @@ function filtrarCostos(){
   }
 
 document.getElementById('costFilterBtn').onclick=filtrarCostos;
+document.getElementById('costClearBtn').onclick=()=>{
+  document.getElementById('costBranch').value='';
+  document.getElementById('costFrom').value='';
+  document.getElementById('costTo').value='';
+  filtrarCostos();
+};
 function setupForm(){
   fBranch.innerHTML=branches.map(b=>`<option value="${b.id}">${b.nombre}</option>`).join('');
   if(profile.rol==='sucursal'){fBranch.value=profile.sucursal_id;fBranch.disabled=true}else fBranch.disabled=false;
