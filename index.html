@@ -552,31 +552,7 @@ function recurring(){
   return Object.entries(m).map(([k,rs])=>({branch:branchName(+k.split('|')[0]),equipment:equipName(+k.split('|')[1]),count:rs.length,cost:rs.reduce((a,r)=>a+(+r.mano_obra||0)+(+r.materiales||0)+(+r.otros||0),0)})).filter(x=>x.count>=3||x.cost>=5000);
 }
 function render(){
-const costBranch=document.getElementById('costBranch');
 
-if(costBranch && costBranch.options.length===1){
-  costBranch.innerHTML=
-    '<option value="">Todas las sucursales</option>'+
-    branches.map(b=>`<option value="${b.id}">${b.nombre}</option>`).join('');
-}
-
-const costFilterBtn=document.getElementById('costFilterBtn');
-if(costFilterBtn) costFilterBtn.onclick=render;
-
-const costBranchValue=costBranch?.value || '';
-const costFrom=document.getElementById('costFrom')?.value || '';
-const costTo=document.getElementById('costTo')?.value || '';
-
-const costReports=reports.filter(r=>{
-  if(costBranchValue && Number(r.sucursal_id)!==Number(costBranchValue)) return false;
-
-  const fecha=(r.fecha_reporte || '').slice(0,10);
-
-  if(costFrom && fecha<costFrom) return false;
-  if(costTo && fecha>costTo) return false;
-
-  return true;
-});
   cNew.textContent=reports.filter(r=>r.estatus==='Nuevo').length;
   cPending.textContent=reports.filter(r=>['Pendiente','Asignado'].includes(r.estatus)).length;
   cProcess.textContent=reports.filter(r=>['En proceso','Esperando material','Resuelto'].includes(r.estatus)).length;
@@ -620,12 +596,12 @@ else estilo='style="background:#fff8d9;border-color:#e0c24f;"';
   alerts.innerHTML='<div class="muted">Tus reportes se muestran arriba.</div>';
 }
   reportRows.innerHTML=reports.map(r=>`<tr><td><button data-open="${r.id}" style="border:0;background:none;color:#b95700;font-weight:900">${r.folio}</button></td><td>${branchName(r.sucursal_id)}</td><td>${areaName(r.area_id)}</td><td>${equipName(r.equipo_id)}</td><td><span class="badge ${r.prioridad==='Urgente'?'urgent':r.prioridad==='Alta'?'high':''}">${r.prioridad}</span></td><td>${r.estatus}</td><td>${money((+r.mano_obra||0)+(+r.materiales||0)+(+r.otros||0))}</td></tr>`).join('');
-  laborTotal.textContent=money(costReports.reduce((a,r)=>a+(+r.mano_obra||0),0));
-  materialsTotal.textContent=money(costReports.reduce
-  otherTotal.textContent=money(costReports.reduce((a,r)=>a+(+r.otros||0),0));
-  grandTotal.textContent=money(costReports.reduce((a,r)=>a+(+r.mano_obra||0)+(+r.materiales||0)+(+r.otros||0),0));
+  laborTotal.textContent=money(reports.reduce((a,r)=>a+(+r.mano_obra||0),0));
+  materialsTotal.textContent=money(reports.reduce
+  otherTotal.textContent=money(reports.reduce((a,r)=>a+(+r.otros||0),0));
+  grandTotal.textContent=money(reports.reduce((a,r)=>a+(+r.mano_obra||0)+(+r.materiales||0)+(+r.otros||0),0));
 
-document.getElementById('costRows').innerHTML=costReports.map(r=>{
+document.getElementById('costRows').innerHTML=reports.map(r=>{
   const b=branches.find(x=>+x.id===+r.sucursal_id)?.nombre||'—';
   const a=areasList.find(x=>+x.id===+r.area_id)?.nombre||'—';
   const e=equipment.find(x=>+x.id===+r.equipo_id)?.nombre||'—';
