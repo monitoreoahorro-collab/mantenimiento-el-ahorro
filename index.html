@@ -242,6 +242,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:
 
 <button type="button" class="btn" id="costFilterBtn">Filtrar</button>
 <button type="button" class="btn secondary" id="costClearBtn">Limpiar filtros</button>
+<button type="button" class="btn secondary" id="costTodayBtn">Hoy</button>
 </div>
   <div style="overflow:auto">
     <table class="table">
@@ -672,6 +673,12 @@ document.getElementById('costClearBtn').onclick=()=>{
   document.getElementById('costBranch').value='';
   document.getElementById('costFrom').value='';
   document.getElementById('costTo').value='';
+  filtrarCostos();
+};
+document.getElementById('costTodayBtn').onclick=()=>{
+  const hoy=new Date().toISOString().slice(0,10);
+  document.getElementById('costFrom').value=hoy;
+  document.getElementById('costTo').value=hoy;
   filtrarCostos();
 };
 function setupForm(){
