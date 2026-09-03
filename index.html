@@ -562,7 +562,9 @@ if(profile.rol==='admin'){
     ? proximos.map(m=>{
         const fecha=new Date(m.proxima_fecha+'T00:00:00');
 
-        let estado='PRÓXIMO';
+        const diferencia=Math.ceil((fecha-hoy)/(1000*60*60*24));
+let estado=`PRÓXIMO · Faltan ${diferencia} días`;
+if(diferencia===1) estado='PRÓXIMO · Falta 1 día';
         if(fecha<hoy) estado='VENCIDO';
         else if(fecha.getTime()===hoy.getTime()) estado='VENCE HOY';
 
