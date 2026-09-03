@@ -551,7 +551,13 @@ function recurring(){
   return Object.entries(m).map(([k,rs])=>({branch:branchName(+k.split('|')[0]),equipment:equipName(+k.split('|')[1]),count:rs.length,cost:rs.reduce((a,r)=>a+(+r.mano_obra||0)+(+r.materiales||0)+(+r.otros||0),0)})).filter(x=>x.count>=3||x.cost>=5000);
 }
 function render(){
+const costBranch=document.getElementById('costBranch');
 
+if(costBranch && costBranch.options.length===1){
+  costBranch.innerHTML=
+    '<option value="">Todas las sucursales</option>'+
+    branches.map(b=>`<option value="${b.id}">${b.nombre}</option>`).join('');
+}
   cNew.textContent=reports.filter(r=>r.estatus==='Nuevo').length;
   cPending.textContent=reports.filter(r=>['Pendiente','Asignado'].includes(r.estatus)).length;
   cProcess.textContent=reports.filter(r=>['En proceso','Esperando material','Resuelto'].includes(r.estatus)).length;
