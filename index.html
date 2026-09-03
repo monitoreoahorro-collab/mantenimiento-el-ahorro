@@ -567,8 +567,9 @@ let estado=`PRÓXIMO · Faltan ${diferencia} días`;
 if(diferencia===1) estado='PRÓXIMO · Falta 1 día';
         if(fecha<hoy) estado='VENCIDO';
         else if(fecha.getTime()===hoy.getTime()) estado='VENCE HOY';
+        const estilo=fecha<hoy ? 'style="background:#fde8e8;border-color:#e57373;"' : '';
 
-        return `<div class="alert">
+       return `<div class="alert" ${estilo}>
           <b>${estado} · Mantenimiento programado</b><br>
           ${equipName(m.equipo_id)} · ${branchName(m.sucursal_id)}<br>
           <span class="muted">Próxima fecha: ${m.proxima_fecha}</span><br>
