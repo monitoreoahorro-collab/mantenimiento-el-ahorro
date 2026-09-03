@@ -624,8 +624,48 @@ document.getElementById('costRows').innerHTML=reports.map(r=>{
     <td><b>${money(t)}</b></td>
   </tr>`;
 }).join('');
+function filtrarCostos(){
+  const sucursal=document.getElementById('costBranch')?.value || '';
+  const desde=document.getElementById('costFrom')?.value || '';
+  const hasta=document.getElementById('costTo')?.value || '';
 
+  const filtrados=reports.filter(r=>{
+    if(sucursal && Number(r.sucursal_id)!==Number(sucursal)) return false;
+
+    const fecha=(r.fecha_reporte || '').slice(0,10);
+
+    if(desde && fecha<desde) return false;
+    if(hasta && fecha>hasta) return false;
+
+    return true;
+  });
+
+  laborTotal.textContent=money(filtrados.reduce((a,r)=>a+(+r.mano_obra||0),0));
+  materialsTotal.textContent=money(filtrados.reduce((a,r)=>a+(+r.materiales||0),0));
+  otherTotal.textContent=money(filtrados.reduce((a,r)=>a+(+r.otros||0),0));
+  grandTotal.textContent=money(filtrados.reduce((a,r)=>a+(+r.mano_obra||0)+(+r.materiales||0)+(+r.otros||0),0));
+
+  document.getElementById('costRows').innerHTML=filtrados.map(r=>{
+    const b=branches.find(x=>+x.id===+r.sucursal_id)?.nombre||'—';
+    const a=areasList.find(x=>+x.id===+r.area_id)?.nombre||'—';
+    const e=equipment.find(x=>+x.id===+r.equipo_id)?.nombre||'—';
+    const t=(+r.mano_obra||0)+(+r.materiales||0)+(+r.otros||0);
+
+    return `<tr>
+      <td>${b}</td>
+      <td>${r.folio||'—'}</td>
+      <td>${a}</td>
+      <td>${e}</td>
+      <td>${r.estatus||'—'}</td>
+      <td>${money(+r.mano_obra||0)}</td>
+      <td>${money(+r.materiales||0)}</td>
+      <td>${money(+r.otros||0)}</td>
+      <td><b>${money(t)}</b></td>
+    </tr>`;
+  }).join('');
 }
+
+document.getElementById('costFilterBtn').onclick=filtrarCostos;
 function setupForm(){
   fBranch.innerHTML=branches.map(b=>`<option value="${b.id}">${b.nombre}</option>`).join('');
   if(profile.rol==='sucursal'){fBranch.value=profile.sucursal_id;fBranch.disabled=true}else fBranch.disabled=false;
