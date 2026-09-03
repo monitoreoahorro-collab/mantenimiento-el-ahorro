@@ -246,6 +246,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:
 <button type="button" class="btn secondary" id="costWeekBtn">Esta semana</button>
 <button type="button" class="btn secondary" id="costMonthBtn">Este mes</button>
 <button type="button" class="btn secondary" id="costPrevMonthBtn">Mes anterior</button>
+<button type="button" class="btn secondary" id="costYearBtn">Este año</button>
 </div>
   <div style="overflow:auto">
     <table class="table">
@@ -709,6 +710,14 @@ document.getElementById('costPrevMonthBtn').onclick=()=>{
 
   document.getElementById('costFrom').value=inicio.toISOString().slice(0,10);
   document.getElementById('costTo').value=fin.toISOString().slice(0,10);
+  filtrarCostos();
+};
+document.getElementById('costYearBtn').onclick=()=>{
+  const hoy=new Date();
+  const inicio=new Date(hoy.getFullYear(),0,1);
+
+  document.getElementById('costFrom').value=inicio.toISOString().slice(0,10);
+  document.getElementById('costTo').value=hoy.toISOString().slice(0,10);
   filtrarCostos();
 };
 function setupForm(){
