@@ -243,6 +243,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:
 <button type="button" class="btn" id="costFilterBtn">Filtrar</button>
 <button type="button" class="btn secondary" id="costClearBtn">Limpiar filtros</button>
 <button type="button" class="btn secondary" id="costTodayBtn">Hoy</button>
+<button type="button" class="btn secondary" id="costWeekBtn">Esta semana</button>
 </div>
   <div style="overflow:auto">
     <table class="table">
@@ -679,6 +680,16 @@ document.getElementById('costTodayBtn').onclick=()=>{
   const hoy=new Date().toISOString().slice(0,10);
   document.getElementById('costFrom').value=hoy;
   document.getElementById('costTo').value=hoy;
+  filtrarCostos();
+};
+document.getElementById('costWeekBtn').onclick=()=>{
+  const hoy=new Date();
+  const inicio=new Date(hoy);
+  const dia=hoy.getDay();
+  inicio.setDate(hoy.getDate()-(dia===0?6:dia-1));
+
+  document.getElementById('costFrom').value=inicio.toISOString().slice(0,10);
+  document.getElementById('costTo').value=hoy.toISOString().slice(0,10);
   filtrarCostos();
 };
 function setupForm(){
