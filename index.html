@@ -589,7 +589,7 @@ else estilo='style="background:#fff8d9;border-color:#e0c24f;"';
 }
   reportRows.innerHTML=reports.map(r=>`<tr><td><button data-open="${r.id}" style="border:0;background:none;color:#b95700;font-weight:900">${r.folio}</button></td><td>${branchName(r.sucursal_id)}</td><td>${areaName(r.area_id)}</td><td>${equipName(r.equipo_id)}</td><td><span class="badge ${r.prioridad==='Urgente'?'urgent':r.prioridad==='Alta'?'high':''}">${r.prioridad}</span></td><td>${r.estatus}</td><td>${money((+r.mano_obra||0)+(+r.materiales||0)+(+r.otros||0))}</td></tr>`).join('');
   laborTotal.textContent=money(reports.reduce((a,r)=>a+(+r.mano_obra||0),0));
-  materialsTotal.textContent=money(reports.reduce
+  materialsTotal.textContent=money(reports.reduce((a,r)=>a+(+r.materiales||0),0));
   otherTotal.textContent=money(reports.reduce((a,r)=>a+(+r.otros||0),0));
   grandTotal.textContent=money(reports.reduce((a,r)=>a+(+r.mano_obra||0)+(+r.materiales||0)+(+r.otros||0),0));
 
