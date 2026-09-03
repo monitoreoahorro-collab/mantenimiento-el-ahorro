@@ -450,6 +450,46 @@ if(!m){
   await loadMaintenance();
   render();
 }
+
+async function editarMantenimiento(id){
+  const m=mantenimientos.find(x=>Number(x.id)===Number(id));
+  if(!m){
+    alert('No se encontró el mantenimiento.');
+    return;
+  }
+
+  const frecuencia=prompt(
+    'Nueva frecuencia en días:',
+    m.frecuencia_dias
+  );
+
+  if(frecuencia===null) return;
+
+  const proxima=prompt(
+    'Nueva próxima fecha (AAAA-MM-DD):',
+    m.proxima_fecha || ''
+  );
+
+  if(proxima===null) return;
+
+  await db(
+    `mantenimiento_programado?id=eq.${id}`,
+    {
+      method:'PATCH',
+      headers:{'Prefer':'return=minimal'},
+      body:JSON.stringify({
+        frecuencia_dias:Number(frecuencia),
+        proxima_fecha:proxima,
+        updated_at:new Date().toISOString()
+      })
+    }
+  );
+
+  await loadMaintenance();
+  render();
+
+  alert('Mantenimiento actualizado correctamente.');
+}
  async function desactivarMantenimiento(id){
   const confirmar=confirm('¿Seguro que deseas desactivar este mantenimiento?');
   if(!confirmar) return;
@@ -610,6 +650,7 @@ function fillMaintenanceAreas(){
         <button type="button" class="btn" onclick="marcarMantenimientoRealizado(${m.id})">
     Marcar realizado
   </button>
+  <button type="button" class="btn" onclick="editarMantenimiento(${m.id})">Editar</button>
   <button type="button" class="btn" onclick="desactivarMantenimiento(${m.id})">Desactivar</button>
 </td>
     </tr>
