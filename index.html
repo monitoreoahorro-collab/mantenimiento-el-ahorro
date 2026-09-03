@@ -570,6 +570,7 @@ if(diferencia===1) estado='PRÓXIMO · Falta 1 día';
         let estilo='';
 if(fecha<hoy) estilo='style="background:#fde8e8;border-color:#e57373;"';
 else if(fecha.getTime()===hoy.getTime()) estilo='style="background:#fff3cd;border-color:#e0a800;"';
+else estilo='style="background:#fff8d9;border-color:#e0c24f;"';
 
        return `<div class="alert" ${estilo}>
           <b>${estado} · Mantenimiento programado</b><br>
