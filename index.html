@@ -865,7 +865,7 @@ async function openDetail(id){
   dInfo.innerHTML=`<div class="row"><span>Problema</span><b>${current.problema}</b></div><div class="row"><span>Descripción</span><b>${current.descripcion||'—'}</b></div><div class="row"><span>Solicitante</span><b>${current.solicitante||'—'}</b></div>`;
   dStatus.value=current.estatus; dLabor.value=current.mano_obra||0; dMaterials.value=current.materiales||0; dOther.value=current.otros||0;
   dTotal.textContent=money((+current.mano_obra||0)+(+current.materiales||0)+(+current.otros||0));
-  adminEditor.classList.toggle('hidden',profile.rol!=='admin'); commentBox.classList.toggle('hidden',profile.rol!=='admin');
+  adminEditor.classList.toggle('hidden',profile.rol!=='admin'); commentBox.classList.remove('hidden');
   try{
  branchActions.classList.toggle(
   'hidden',
