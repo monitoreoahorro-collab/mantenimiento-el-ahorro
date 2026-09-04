@@ -578,6 +578,14 @@ if(costBranch && costBranch.options.length===1){
   cDone.textContent=reports.filter(r=>r.estatus==='Finalizado').length;
   recent.innerHTML=reports.slice(0,5).map(r=>`<div class="row"><div><b>${r.folio} · ${equipName(r.equipo_id)}</b><div class="muted">${branchName(r.sucursal_id)} · ${areaName(r.area_id)}</div></div><span class="badge ${r.prioridad==='Urgente'?'urgent':r.prioridad==='Alta'?'high':r.estatus==='En proceso'?'process':r.estatus==='Finalizado'?'done':''}">${r.estatus}</span></div>`).join('')||'<div class="muted">Sin reportes todavía.</div>';
 if(profile.rol==='admin'){
+  const nuevosComentarios=commentsList.filter(c=>c.autor_nombre!=='Administrador Principal').length;
+  if(nuevosComentarios>0){
+    recent.innerHTML=
+      `<div class="alert"><b>💬 ${nuevosComentarios} comentario(s) de sucursales</b></div>`+
+      recent.innerHTML;
+  }
+}
+if(profile.rol==='admin'){
   const hoy=new Date();
   hoy.setHours(0,0,0,0);
 
