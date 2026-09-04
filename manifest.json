@@ -1,0 +1,9 @@
+{
+  "name": "Mantenimiento El Ahorro",
+  "short_name": "El Ahorro",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f4f6f8",
+  "theme_color": "#14212a",
+  "description": "Sistema de mantenimiento de El Ahorro"
+}
