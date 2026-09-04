@@ -867,7 +867,10 @@ async function openDetail(id){
   dTotal.textContent=money((+current.mano_obra||0)+(+current.materiales||0)+(+current.otros||0));
   adminEditor.classList.toggle('hidden',profile.rol!=='admin'); commentBox.classList.remove('hidden');
   try{
-  branchActions.classList.toggle('hidden',profile.rol!=='sucursal');
+ branchActions.classList.toggle(
+  'hidden',
+  profile.rol!=='sucursal' || current.estatus!=='Nuevo'
+);
     const data=await db('comentarios?select=id,autor_nombre,comentario,created_at&reporte_id=eq.'+id+'&order=created_at.asc');
     comments.innerHTML=(data||[]).map(c=>`<div class="row"><div><b>${c.autor_nombre||'Administrador'}</b><div class="muted">${c.comentario}</div></div></div>`).join('')||'<div class="muted">Sin comentarios.</div>';
   }catch{comments.innerHTML='<div class="muted">Comentarios solo para administradores.</div>'}
