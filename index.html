@@ -344,10 +344,12 @@ async function loadCatalogs(){
   areasList=await db('areas?select=id,nombre&activa=eq.true&order=id.asc')||[];
   equipment=await db('equipos?select=id,nombre,area_id&activo=eq.true&order=id.asc')||[];
 }
+let commentsList=[];
 async function loadReports(){
   reports=await db('reportes?select=id,folio,sucursal_id,area_id,equipo_id,problema,descripcion,prioridad,estatus,solicitante,responsable,mano_obra,materiales,otros,fecha_reporte,fecha_finalizacion&order=fecha_reporte.desc')||[];
+  commentsList=await db('comentarios?select=id,reporte_id,autor_nombre,comentario,created_at&order=created_at.desc')||[];
   render();
-
+}
 }let mantenimientos=[];
 
 async function loadMaintenance(){
