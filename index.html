@@ -938,6 +938,57 @@ editBranchReportBtn.onclick=async()=>{
     alert(err.message);
   }
 };
+cancelBranchReportBtn.onclick=async()=>{
+  if(!current) return;
+
+  if(current.estatus!=='Nuevo'){
+    alert('Este reporte ya no se puede anular porque ya fue atendido.');
+    return;
+  }
+
+  const motivo=prompt('Motivo de la anulación:');
+  if(motivo===null) return;
+  if(!motivo.trim()){
+    alert('Escribe el motivo de la anulación.');
+    return;
+  }
+
+  const confirmar=confirm('¿Seguro que deseas anular este reporte?');
+  if(!confirmar) return;
+
+  try{
+    await db(
+      `reportes?id=eq.${current.id}`,
+      {
+        method:'PATCH',
+        headers:{'Prefer':'return=minimal'},
+        body:JSON.stringify({
+          estatus:'Anulado',
+          updated_at:new Date().toISOString()
+        })
+      }
+    );
+
+    await db(
+      'comentarios',
+      {
+        method:'POST',
+        headers:{'Prefer':'return=minimal'},
+        body:JSON.stringify({
+          reporte_id:current.id,
+          autor_nombre:profile.nombre,
+          comentario:'REPORTE ANULADO: '+motivo.trim()
+        })
+      }
+    );
+
+    await loadReports();
+    page('reportes');
+    alert('Reporte anulado correctamente.');
+  }catch(err){
+    alert(err.message);
+  }
+};
 addComment.onclick=async()=>{
   const t=comment.value.trim();if(!t)return;
   try{
