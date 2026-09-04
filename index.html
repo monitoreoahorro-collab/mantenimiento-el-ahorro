@@ -556,6 +556,7 @@ function page(id){
   document.querySelectorAll('main section').forEach(s=>s.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
   document.querySelectorAll('.nav [data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));
+  if(id==='dashboard')render();
 }
 function branchName(id){return branches.find(x=>x.id===id)?.nombre||'—'}
 function areaName(id){return areasList.find(x=>x.id===id)?.nombre||'—'}
