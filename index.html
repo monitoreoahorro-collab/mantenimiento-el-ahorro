@@ -350,7 +350,8 @@ async function loadReports(){
   commentsList=await db('comentarios?select=id,reporte_id,autor_nombre,comentario,created_at&order=created_at.desc')||[];
   render();
 }
-}let mantenimientos=[];
+
+let mantenimientos=[];
 
 async function loadMaintenance(){
   mantenimientos=await db(
