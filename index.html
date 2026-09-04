@@ -274,6 +274,11 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:
       <div class="top"><div><div class="eyebrow" id="dFolio"></div><h1 id="dTitle"></h1><div class="muted" id="dMeta"></div></div><button class="btn secondary" data-page="reportes">← Volver</button></div>
       <div class="grid">
         <div class="panel"><h2>Información</h2><div id="dInfo"></div><h2 style="margin-top:20px">Comentarios</h2><div id="comments"></div><div id="commentBox" class="row"><input id="comment" placeholder="Comentario del administrador..." style="flex:1;padding:10px;border:1px solid #d5dee3;border-radius:9px"><button class="btn" id="addComment">Agregar</button></div></div>
+       <div id="branchActions" class="panel hidden">
+  <h2>Opciones del reporte</h2>
+  <button type="button" class="btn" id="editBranchReportBtn">Editar reporte</button>
+  <button type="button" class="btn secondary" id="cancelBranchReportBtn">Anular reporte</button>
+</div>
         <div class="panel" id="adminEditor"><h2>Administración</h2>
           <div class="field"><label>Estatus</label><select id="dStatus"><option>Nuevo</option><option>Pendiente</option><option>Asignado</option><option>En proceso</option><option>Esperando material</option><option>Resuelto</option><option>Finalizado</option></select></div>
           <div class="field"><label>Mano de obra</label><input id="dLabor" type="number" min="0" step=".01"></div>
@@ -862,6 +867,7 @@ async function openDetail(id){
   dTotal.textContent=money((+current.mano_obra||0)+(+current.materiales||0)+(+current.otros||0));
   adminEditor.classList.toggle('hidden',profile.rol!=='admin'); commentBox.classList.remove('hidden');
   try{
+  branchActions.classList.toggle('hidden',profile.rol!=='sucursal');
     const data=await db('comentarios?select=id,autor_nombre,comentario,created_at&reporte_id=eq.'+id+'&order=created_at.asc');
     comments.innerHTML=(data||[]).map(c=>`<div class="row"><div><b>${c.autor_nombre||'Administrador'}</b><div class="muted">${c.comentario}</div></div></div>`).join('')||'<div class="muted">Sin comentarios.</div>';
   }catch{comments.innerHTML='<div class="muted">Comentarios solo para administradores.</div>'}
@@ -892,6 +898,45 @@ saveDetail.onclick=async()=>{
     await db('reportes?id=eq.'+current.id,{method:'PATCH',headers:{'Prefer':'return=minimal'},body:JSON.stringify(payload)});
     await loadReports();await openDetail(current.id);
   }catch(err){alert(err.message)}
+};
+editBranchReportBtn.onclick=async()=>{
+  if(!current) return;
+
+  if(current.estatus!=='Nuevo'){
+    alert('Este reporte ya no se puede editar porque ya fue atendido.');
+    return;
+  }
+
+  const problema=prompt('Problema:',current.problema || '');
+  if(problema===null) return;
+
+  const descripcion=prompt('Descripción:',current.descripcion || '');
+  if(descripcion===null) return;
+
+  const solicitante=prompt('Solicitante:',current.solicitante || '');
+  if(solicitante===null) return;
+
+  try{
+    await db(
+      `reportes?id=eq.${current.id}`,
+      {
+        method:'PATCH',
+        headers:{'Prefer':'return=minimal'},
+        body:JSON.stringify({
+          problema:problema,
+          descripcion:descripcion,
+          solicitante:solicitante,
+          updated_at:new Date().toISOString()
+        })
+      }
+    );
+
+    await loadReports();
+    await openDetail(current.id);
+    alert('Reporte actualizado correctamente.');
+  }catch(err){
+    alert(err.message);
+  }
 };
 addComment.onclick=async()=>{
   const t=comment.value.trim();if(!t)return;
