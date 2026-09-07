@@ -109,6 +109,8 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:
     </div>
   </div>
 
+  <button type="button" class="primary" onclick="activarNotificaciones()">🔔 Activar notificaciones</button>
+
   <div class="panel">
     <form id="maintenanceForm" class="form">
 
@@ -337,6 +339,52 @@ async function db(path,opts={}){
   return data;
 }
 let profile=null, branches=[], areasList=[], equipment=[], reports=[], current=null;
+const VAPID_PUBLIC_KEY='BIw4MdUSgb_UD1ilbJVeI1IhG5z72lUPVIlTlTbT-DTyZgLnapQDeXbRvxOSVwQzLj8v30TX_3HhxI4E5ff1Ojg';
+function urlBase64ToUint8Array(base64String){
+  const padding='='.repeat((4-base64String.length%4)%4);
+  const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
+  const rawData=atob(base64);
+  return Uint8Array.from([...rawData].map(char=>char.charCodeAt(0)));
+}
+
+async function activarNotificaciones(){
+  try{
+    const permiso=await Notification.requestPermission();
+    if(permiso!=='granted'){
+      alert('No se activaron las notificaciones.');
+      return;
+    }
+
+    const registro=await navigator.serviceWorker.ready;
+
+    let suscripcion=await registro.pushManager.getSubscription();
+
+    if(!suscripcion){
+      suscripcion=await registro.pushManager.subscribe({
+        userVisibleOnly:true,
+        applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+    }
+
+    const user=await authUser();
+    const json=suscripcion.toJSON();
+
+    await db('push_suscripciones',{
+      method:'POST',
+      headers:{'Prefer':'resolution=merge-duplicates'},
+      body:JSON.stringify({
+        usuario_id:user.id,
+        endpoint:json.endpoint,
+        p256dh:json.keys.p256dh,
+        auth:json.keys.auth
+      })
+    });
+
+    alert('Notificaciones activadas correctamente.');
+  }catch(err){
+    alert('Error al activar notificaciones: '+err.message);
+  }
+}
 const money=n=>new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'}).format(Number(n)||0);
 
 async function loadProfile(){
