@@ -1118,6 +1118,10 @@ setupMaintenanceForm();
 loginView.classList.add('hidden');
 appView.classList.remove('hidden');
 page('dashboard');
+const reporteId=new URLSearchParams(window.location.search).get('reporte');
+if(reporteId){
+  await openDetail(Number(reporteId));
+}
   }catch(err){
     loginMsg.textContent=err.message;loginMsg.className='msg err';localStorage.removeItem('ea_access_token');accessToken='';
   }
