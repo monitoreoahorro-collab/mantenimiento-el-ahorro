@@ -353,7 +353,7 @@ async function loadCatalogs(){
 let commentsList=[];
 async function loadReports(){
   reports=await db('reportes?select=id,folio,sucursal_id,area_id,equipo_id,problema,descripcion,prioridad,estatus,solicitante,responsable,mano_obra,materiales,otros,fecha_reporte,fecha_finalizacion&order=fecha_reporte.desc')||[];
-  commentsList=await db('comentarios?select=id,reporte_id,autor_nombre,comentario,created_at,visto_admin&order=created_at.desc')||[];
+  commentsList=await db('comentarios?select=id,reporte_id,autor_nombre,autor_rol,comentario,created_at,visto_admin&order=created_at.desc')||[];
   render();
 }
 
@@ -586,7 +586,7 @@ if(costBranch && costBranch.options.length===1){
   recent.innerHTML=reports.slice(0,5).map(r=>`<div class="row"><div><b>${r.folio} · ${equipName(r.equipo_id)}</b><div class="muted">${branchName(r.sucursal_id)} · ${areaName(r.area_id)}</div></div><span class="badge ${r.prioridad==='Urgente'?'urgent':r.prioridad==='Alta'?'high':r.estatus==='En proceso'?'process':r.estatus==='Finalizado'?'done':''}">${r.estatus}</span></div>`).join('')||'<div class="muted">Sin reportes todavía.</div>';
 if(profile.rol==='admin'){
   const pendientes=commentsList.filter(
-    c=>c.autor_nombre!=='Administrador Principal' && !c.visto_admin
+   c=>c.autor_rol==='sucursal' && !c.visto_admin
   );
 
   const porReporte={};
@@ -1045,7 +1045,8 @@ addComment.onclick=async()=>{
   const t=comment.value.trim();if(!t)return;
   try{
     const user=await authUser();
-    await db('comentarios',{method:'POST',headers:{'Prefer':'return=minimal'},body:JSON.stringify({reporte_id:current.id,autor_id:user.id,autor_nombre:profile.nombre,comentario:t})});
+    await db('comentarios',{method:'POST',headers:{'Prefer':'return=minimal'},body:JSON.stringify({reporte_id:current.id,autor_id:user.id,autor_nombre:profile.nombre,autor_rol:profile.rol,comentario:t})});
+    autor_rol:profile.rol,
     comment.value='';await openDetail(current.id);
   }catch(err){alert(err.message)}
 };
